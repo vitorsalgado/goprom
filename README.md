@@ -1,2 +1,2 @@
-# goprom
+# GoProm
 Go Promos
