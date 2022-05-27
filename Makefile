@@ -20,15 +20,22 @@ coverage: ## run tests and generate coverage report
 	@go test -v ./... -race -coverprofile=coverage/coverage.out -covermode=atomic
 	@go tool cover -html=coverage/coverage.out -o coverage/coverage.html
 
-check: ## check go code
+vet: ## check go code
 	@go vet ./...
 
 fmt: ## run gofmt in all project files
 	@go fmt ./...
 
+check: vet ## check source code
+	@staticcheck ./...
+
 .PHONY: build
 build: ## build application
-	go build -o bin/goprom $(MAIN)
+	@go build -o bin/goprom $(MAIN)
 
 deps: ## check dependencies
 	@go mod verify
+
+prep: ## prepare local development  environment
+	@echo "installing staticcheck"
+	@go install honnef.co/go/tools/cmd/staticcheck@latest
