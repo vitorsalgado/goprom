@@ -1,5 +1,7 @@
 PROJECT := goprom
-MAIN := cmd/app/main.go
+REGISTRY := localhost:5000
+IMAGE := $(REGISTRY)/$(PROJECT)
+MAIN := cmd/api/main.go
 
 .DEFAULT_GOAL := help
 
@@ -31,7 +33,10 @@ check: vet ## check source code
 
 .PHONY: build
 build: ## build application
-	@go build -o bin/goprom $(MAIN)
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/goprom $(MAIN)
+
+docker-build: ## build docker image
+	@docker build -t $(IMAGE) .
 
 deps: ## check dependencies
 	@go mod verify
