@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	goprom "github.com/vitorsalgado/goprom/internal"
+	"github.com/vitorsalgado/goprom/internal/domain"
+	"github.com/vitorsalgado/goprom/internal/handlers"
 	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("request received")
-		_, _ = fmt.Fprint(w, "pong")
+	ctx, _ := context.WithCancel(context.Background())
+	srv := goprom.NewSrv(ctx, func(mux *http.ServeMux) {
+		mux.Handle("/", goprom.Dispatcher(
+			handlers.NewPingHandler(), handlers.NewPromotionHandler(domain.NewPromotionRepository())))
 	})
-	_ = http.ListenAndServe(":8080", nil)
+	server := http.Server{Addr: ":8080", Handler: srv.Mux}
+
+	_ = server.ListenAndServe()
 }

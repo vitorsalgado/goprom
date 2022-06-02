@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  redis_dev:
+    extends:
+      file: base.yml
+      service: redis
+
+  goprom_dev:
+    build:
+      context: ../..
+      dockerfile: ../../Dockerfile.dev
+    container_name: goprom_dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis_dev

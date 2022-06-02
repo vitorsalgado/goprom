@@ -1,0 +1,15 @@
+FROM golang:1.18-alpine
+
+ARG REDIS_VERSION="stable"
+ARG REDIS_DOWNLOAD_URL="http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz"
+
+RUN apk update && apk upgrade && \
+    apk add --update --no-cache --virtual \
+    redis \
+    make
+
+WORKDIR /app
+COPY go.mod go.sum Makefile ./
+RUN make deps
+COPY . .
+RUN make build
