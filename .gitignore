@@ -20,10 +20,13 @@
 
 .DS_Store
 .vscode/
+.idea/
 
 Makefile.overrides
 promo.lock
+package-lock.json
 
 bin/
 coverage/
-data/
+data/*
+node_modules/

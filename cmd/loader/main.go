@@ -56,7 +56,8 @@ func main() {
 		return
 	}
 
-	promo := handlers.NewLoadPromotionsHandler(cfg.PromotionsCsv, cfg.PromotionsBulkCmdFilename, handlers.NewStreamer(cfg))
+	promo := handlers.NewLoadPromotionsHandler(
+		cfg.PromotionsCsv, cfg.PromotionsBulkCmdFilename, handlers.NewStreamer(cfg), &handlers.LoaderLocalFileSource{}, &handlers.LoaderDefaultLifecycle{})
 	n, err := promo.Load()
 
 	if err != nil {

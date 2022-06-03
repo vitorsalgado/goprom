@@ -43,7 +43,7 @@ requirements-down: ## tear down application dependencies
 
 .PHONY: test
 test: ## run tests in all packages
-	@go test -v ./...
+	@go test -v ./internal/... ./cmd/...
 
 test-e2e: ## run end-to-end tests
 	@chmod +x ./test/e2e/run.sh
@@ -86,5 +86,6 @@ download: ## download dependencies
 	@go mod download
 
 prep: ## prepare local development  environment
-	@echo "installing staticcheck"
+	@echo "local tools"
 	@go install honnef.co/go/tools/cmd/staticcheck@latest
+	@npm i
