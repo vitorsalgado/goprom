@@ -62,7 +62,12 @@ make up
 
 With the application running, in order to process new promotions, add the **promotions.csv** file to the directory
 **data** at the project root dir. After some time, the **loader** application will identify this file and start
-the process automatically.
+the process automatically.  
+Query one promotion with the following command:
+
+```
+curl http://localhost:8080/promotions/d018ef0b-dbd9-48f1-ac1a-eb4d90e57118
+```
 
 ## Development
 
