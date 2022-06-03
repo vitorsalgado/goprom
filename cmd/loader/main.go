@@ -11,6 +11,8 @@ import (
 	"github.com/vitorsalgado/goprom/internal/utils/storage"
 	"golang.org/x/sys/unix"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -31,12 +33,21 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	go func() {
+		exit := make(chan os.Signal, 1)
+		signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
+
+		<-exit
+
+		cancel()
+	}()
+
 	_ = godotenv.Load()
 	cfg := config.Load()
 
-	goprom.ConfigureRuntime(cfg)
+	goprom.ConfigureEnv(cfg)
 
-	// testing is redis is reachable
+	// testing if redis is reachable
 	redisCtx, redisCancelFn := context.WithTimeout(ctx, 10*time.Second)
 	defer redisCancelFn()
 
@@ -47,9 +58,6 @@ func main() {
 		return
 	}
 
-	log.Info().Msgf(cfg.PromotionsCsv)
-	log.Info().Msgf(cfg.PromotionsBulkCmdFilename)
-
 	if _, err := os.Stat(cfg.PromotionsCsv); err != nil {
 		log.Info().Msgf("promotions file %s does not exists", cfg.PromotionsCsv)
 		os.Exit(0)
@@ -57,7 +65,7 @@ func main() {
 	}
 
 	promo := handlers.NewLoadPromotionsHandler(
-		cfg.PromotionsCsv, cfg.PromotionsBulkCmdFilename, handlers.NewStreamer(cfg), &handlers.LoaderLocalFileSource{}, &handlers.LoaderDefaultLifecycle{})
+		cfg, ctx, handlers.NewStreamer(cfg), &handlers.LoaderLocalFileSource{}, &handlers.LoaderDefaultLifecycle{})
 	n, err := promo.Load()
 
 	if err != nil {
@@ -68,5 +76,5 @@ func main() {
 	elapsed := time.Since(start)
 
 	log.Info().Msg(
-		fmt.Sprintf("finished feeding %d promotions. took %f", n, elapsed.Seconds()))
+		fmt.Sprintf("finished feeding %d promotions. took %f seconds", n, elapsed.Seconds()))
 }

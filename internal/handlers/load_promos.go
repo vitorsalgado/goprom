@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
 	"strings"
@@ -14,7 +17,7 @@ type (
 	// Streamer handles promotions file data chunks
 	Streamer interface {
 		Stream(w io.StringWriter, chunk []string) error
-		Push() error
+		Push(filename string) error
 	}
 
 	LoaderSource interface {
@@ -27,11 +30,11 @@ type (
 
 	// LoadPromotionsHandler loads promotions from a source file into a data storage
 	LoadPromotionsHandler struct {
-		s                     Streamer
-		lc                    LoaderLifecycle
-		src                   LoaderSource
-		promotionsCsv         string
-		promotionsCmdFilename string
+		s   Streamer
+		lc  LoaderLifecycle
+		src LoaderSource
+		cfg *config.Config
+		ctx context.Context
 	}
 
 	LoaderLocalFileSource struct {
@@ -49,38 +52,72 @@ const (
 
 // NewLoadPromotionsHandler initiates a new instance of LoadPromotionsHandler
 func NewLoadPromotionsHandler(
-	filename, cmds string, s Streamer, src LoaderSource, lc LoaderLifecycle,
+	cfg *config.Config, ctx context.Context, s Streamer, src LoaderSource, lc LoaderLifecycle,
 ) *LoadPromotionsHandler {
 	return &LoadPromotionsHandler{
-		promotionsCsv: filename, promotionsCmdFilename: cmds, s: s, src: src, lc: lc}
+		cfg: cfg, ctx: ctx, s: s, src: src, lc: lc}
 }
 
 // Load loads promotions from a source into a data storage
 func (p *LoadPromotionsHandler) Load() (int64, error) {
-	log.Debug().Msgf("reading promotions file %s", p.promotionsCsv)
-	pf, err := p.src.File(p.promotionsCsv)
+	log.Info().Msgf("loading promotions from source %s", p.cfg.PromotionsCsv)
+
+	pf, err := p.src.File(p.cfg.PromotionsCsv)
 	if err != nil {
-		log.Error().Err(err).Msg("error opening promotions file")
+		log.Error().Err(err).Msgf("error loading promotions from source %s", p.cfg.PromotionsCsv)
 		return -1, err
 	}
 
 	defer pf.Close()
 
-	log.Debug().Msgf("creating commands file %s", p.promotionsCmdFilename)
-	df, err := os.Create(p.promotionsCmdFilename)
-	if err != nil {
-		log.Error().Err(err).Msg("error creating redis commands file")
-		return -1, err
-	}
-
 	scanner := bufio.NewScanner(pf)
-	cmds := bufio.NewWriter(df)
+	ch := make(chan string)
+
+	group, ctx := errgroup.WithContext(p.ctx)
+
+	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
+		d := i
+		group.Go(func() error {
+			df, e := os.Create(fmt.Sprintf(p.cfg.PromotionsBulkCmdFilename, d))
+			if e != nil {
+				log.Error().Err(e).Msg("error creating redis commands file")
+				return e
+			}
+
+			cmds := bufio.NewWriter(df)
+
+			for {
+				select {
+				case chunk, ok := <-ch:
+					if !ok {
+						_ = cmds.Flush()
+						_ = df.Close()
+						return nil
+					}
+
+					_ = p.s.Stream(cmds, strings.Split(chunk, ","))
+
+				case <-ctx.Done():
+					_ = cmds.Flush()
+					_ = df.Close()
+					return nil
+				}
+			}
+		})
+	}
 
 	var c int64
 
 	for scanner.Scan() {
-		_ = p.s.Stream(cmds, strings.Split(scanner.Text(), ","))
+		ch <- scanner.Text()
 		c++
+	}
+
+	close(ch)
+
+	if err = group.Wait(); err != nil {
+		log.Error().Stack().Err(err).Msgf("error processing promotions")
+		return -1, err
 	}
 
 	err = scanner.Err()
@@ -89,17 +126,25 @@ func (p *LoadPromotionsHandler) Load() (int64, error) {
 		return -1, err
 	}
 
-	err = cmds.Flush()
-	if err != nil {
+	group, ctx = errgroup.WithContext(ctx)
+
+	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
+		d := i
+		group.Go(func() error {
+			err = p.s.Push(fmt.Sprintf(p.cfg.PromotionsBulkCmdFilename, d))
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+	}
+
+	if err = group.Wait(); err != nil {
 		return -1, err
 	}
 
-	err = p.s.Push()
-	if err != nil {
-		return -1, err
-	}
-
-	err = p.lc.OnFinish(p.promotionsCsv)
+	err = p.lc.OnFinish(p.cfg.PromotionsCsv)
 
 	return c, err
 }

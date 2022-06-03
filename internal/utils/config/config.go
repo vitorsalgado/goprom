@@ -7,20 +7,20 @@ import (
 	"os"
 )
 
-// Env holds environment variables used by the application
-type Env struct {
+type environ struct {
 	Debug                     bool   `env:"DEBUG,default=true"`
 	LogLevel                  int8   `env:"LOG_LEVEL,default=1"`
 	ServerAddr                string `env:"SERVER_ADDR,default=:8080"`
+	PromotionsBulkLoadWorkers int    `env:"PROMOTIONS_BULK_LOAD_WORKERS,default=10"`
 	PromotionsCsv             string `env:"PROMOTIONS,default=/data/promotions.csv"`
-	PromotionsBulkCmdFilename string `env:"PROMOTIONS_CMDS,default=/data/promotions_commands.txt"`
+	PromotionsBulkCmdFilename string `env:"PROMOTIONS_CMDS,default=/data/promotions_commands_%d.txt"`
 	PromotionsExpiration      int    `env:"PROMOTIONS_EXPIRATION,default=1800"`
 	RedisAddr                 string `env:"REDIS_ADDR,default=redis:6379"`
 }
 
 // Config represent application configurations
 type Config struct {
-	Env
+	environ
 	WorkDir string
 }
 
@@ -38,12 +38,12 @@ func Load() *Config {
 		return nil
 	}
 
-	var env Env
+	var env environ
 	_, err = goenv.UnmarshalFromEnviron(&env)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading environment variables into struct")
 		return nil
 	}
 
-	return &Config{Env: env, WorkDir: wd}
+	return &Config{environ: env, WorkDir: wd}
 }

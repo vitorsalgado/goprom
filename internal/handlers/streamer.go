@@ -36,11 +36,11 @@ func (p *RedisStreamer) Stream(w io.StringWriter, chunk []string) error {
 	return err
 }
 
-func (p *RedisStreamer) Push() error {
-	log.Info().Msg("pushing changes")
+func (p *RedisStreamer) Push(filename string) error {
+	log.Info().Msg("pushing changes to Redis")
 
 	out, err := exec.Command("bash", "-c",
-		fmt.Sprintf("cat %s | redis-cli --pipe -u redis://%s", p.cfg.PromotionsBulkCmdFilename, p.cfg.RedisAddr)).
+		fmt.Sprintf("cat %s | redis-cli --pipe -u redis://%s", filename, p.cfg.RedisAddr)).
 		Output()
 	if err != nil {
 		log.Error().Err(err).

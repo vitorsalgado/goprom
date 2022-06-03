@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func ConfigureRuntime(cfg *config.Config) {
+func ConfigureEnv(cfg *config.Config) {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.With().Timestamp().Logger()
 	zerolog.SetGlobalLevel(zerolog.Level(cfg.LogLevel))

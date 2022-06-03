@@ -97,8 +97,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ---
 
-## Considerations
+## Considerations and Thoughts
 
-TBD
+- To improve the CSV processing performance, a group of goroutines are used, instead of just one in the previous
+  implementation. Each goroutine writes in its own bulk load commands file and several loads are being done in parallel
+  now. The performance improvement wasn't so big in the end. Need more thoughts on this.
 
 <p align="center"><a href="#goprom-top">back to top</a></p>

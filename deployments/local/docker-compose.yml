@@ -25,7 +25,7 @@ services:
     environment:
       DEBUG: true
       PROMOTIONS: /data/promotions.csv
-      PROMOTIONS_CMDS: /data/promotions_commands.txt
+      PROMOTIONS_CMDS: /data/promotions_commands_%d.txt
     volumes:
       - ../../data:/data
     links:
