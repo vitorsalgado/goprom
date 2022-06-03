@@ -1,11 +1,11 @@
-package handlers
+package loader
 
 import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"github.com/vitorsalgado/goprom/internal/std/config"
 	"io"
 	"io/ioutil"
 	"os"
@@ -30,7 +30,7 @@ func TestFeedingPromotions(t *testing.T) {
 		fake.m.On("Push", mock.Anything).Return(nil)
 
 		loader := NewLoadPromotionsHandler(
-			cfg, context.TODO(), &fake, &LoaderLocalFileSource{}, &l)
+			cfg, context.TODO(), &fake, &LocalFileSource{}, &l)
 		i, err := loader.Load()
 
 		cmds0, _ := ioutil.ReadFile(fmt.Sprintf(cfg.PromotionsBulkCmdFilename, 0))

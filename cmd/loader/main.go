@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
-	goprom "github.com/vitorsalgado/goprom/internal"
-	"github.com/vitorsalgado/goprom/internal/handlers"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
-	"github.com/vitorsalgado/goprom/internal/utils/storage"
+	"github.com/vitorsalgado/goprom/internal/loader"
+	goprom "github.com/vitorsalgado/goprom/internal/std"
+	"github.com/vitorsalgado/goprom/internal/std/config"
+	"github.com/vitorsalgado/goprom/internal/std/storage"
 	"golang.org/x/sys/unix"
 	"os"
 	"os/signal"
@@ -64,8 +64,8 @@ func main() {
 		return
 	}
 
-	promo := handlers.NewLoadPromotionsHandler(
-		cfg, ctx, handlers.NewStreamer(cfg), &handlers.LoaderLocalFileSource{}, &handlers.LoaderDefaultLifecycle{})
+	promo := loader.NewLoadPromotionsHandler(
+		cfg, ctx, loader.NewStreamer(cfg), &loader.LocalFileSource{}, &loader.DefaultLifecycle{})
 	n, err := promo.Load()
 
 	if err != nil {

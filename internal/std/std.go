@@ -1,9 +1,9 @@
-package goprom
+package std
 
 import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"github.com/vitorsalgado/goprom/internal/std/config"
 	"os"
 )
 

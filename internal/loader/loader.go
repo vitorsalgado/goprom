@@ -1,16 +1,15 @@
-package handlers
+package loader
 
 import (
 	"bufio"
 	"context"
 	"fmt"
 	"github.com/rs/zerolog/log"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"github.com/vitorsalgado/goprom/internal/std/config"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
 	"strings"
-	"time"
 )
 
 type (
@@ -20,27 +19,13 @@ type (
 		Push(filename string) error
 	}
 
-	LoaderSource interface {
-		File(filename string) (*os.File, error)
-	}
-
-	LoaderLifecycle interface {
-		OnFinish(filename string) error
-	}
-
-	// LoadPromotionsHandler loads promotions from a source file into a data storage
-	LoadPromotionsHandler struct {
+	// Handler loads promotions from a source file into a data storage
+	Handler struct {
 		s   Streamer
-		lc  LoaderLifecycle
-		src LoaderSource
+		lc  Lifecycle
+		src Source
 		cfg *config.Config
 		ctx context.Context
-	}
-
-	LoaderLocalFileSource struct {
-	}
-
-	LoaderDefaultLifecycle struct {
 	}
 )
 
@@ -50,16 +35,16 @@ const (
 	columnExpirationDate = 2
 )
 
-// NewLoadPromotionsHandler initiates a new instance of LoadPromotionsHandler
+// NewLoadPromotionsHandler initiates a new instance of Handler
 func NewLoadPromotionsHandler(
-	cfg *config.Config, ctx context.Context, s Streamer, src LoaderSource, lc LoaderLifecycle,
-) *LoadPromotionsHandler {
-	return &LoadPromotionsHandler{
+	cfg *config.Config, ctx context.Context, s Streamer, src Source, lc Lifecycle,
+) *Handler {
+	return &Handler{
 		cfg: cfg, ctx: ctx, s: s, src: src, lc: lc}
 }
 
 // Load loads promotions from a source into a data storage
-func (p *LoadPromotionsHandler) Load() (int64, error) {
+func (p *Handler) Load() (int64, error) {
 	log.Info().Msgf("loading promotions from source %s", p.cfg.PromotionsCsv)
 
 	pf, err := p.src.File(p.cfg.PromotionsCsv)
@@ -147,21 +132,4 @@ func (p *LoadPromotionsHandler) Load() (int64, error) {
 	err = p.lc.OnFinish(p.cfg.PromotionsCsv)
 
 	return c, err
-}
-
-func (src *LoaderLocalFileSource) File(filename string) (*os.File, error) {
-	return os.Open(filename)
-}
-
-func (lc *LoaderDefaultLifecycle) OnFinish(filename string) error {
-	parts := strings.Split(filename, ".csv")
-	nm := parts[0]
-	now := time.Now().UTC().Format("20060102150405")
-
-	err := os.Rename(filename, fmt.Sprintf("%s--%s--imported.csv", nm, now))
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

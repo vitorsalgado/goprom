@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"github.com/rs/zerolog/log"
-	goprom "github.com/vitorsalgado/goprom/internal"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
-	"github.com/vitorsalgado/goprom/internal/utils/storage"
+	"github.com/vitorsalgado/goprom/internal/api"
+	goprom "github.com/vitorsalgado/goprom/internal/std"
+	"github.com/vitorsalgado/goprom/internal/std/config"
+	"github.com/vitorsalgado/goprom/internal/std/storage"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,7 +25,7 @@ func main() {
 
 	client := storage.NewRedisClient(conf)
 
-	srv := goprom.NewSrv()
+	srv := api.NewSrv()
 	server := srv.APIServer(conf.ServerAddr, client)
 
 	ext := make(chan os.Signal, 1)

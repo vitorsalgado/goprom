@@ -1,9 +1,9 @@
-package handlers
+package loader
 
 import (
 	"fmt"
 	"github.com/rs/zerolog/log"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"github.com/vitorsalgado/goprom/internal/std/config"
 	"io"
 	"os/exec"
 	"strconv"

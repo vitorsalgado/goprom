@@ -2,7 +2,7 @@ package storage
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"github.com/vitorsalgado/goprom/internal/std/config"
 )
 
 // NewRedisClient creates a new Redis client

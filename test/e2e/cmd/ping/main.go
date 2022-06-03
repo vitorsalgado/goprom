@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"github.com/vitorsalgado/goprom/internal/std/config"
 	"github.com/vitorsalgado/goprom/test/e2e"
 	"time"
 )
