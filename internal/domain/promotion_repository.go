@@ -27,12 +27,14 @@ func (repo *PromotionRedisRepository) GetByID(ctx context.Context, id string) (*
 	}
 
 	f := res.Val()
+	if len(f) == 0 {
+		return nil, nil
+	}
+
 	price, err := strconv.ParseFloat(f["price"], 64)
 	if err != nil {
 		return nil, err
 	}
 
-	promo := &Promotion{ID: f["id"], Price: price, ExpirationDate: f["expiration_date"]}
-
-	return promo, nil
+	return &Promotion{ID: f["id"], Price: price, ExpirationDate: f["expiration_date"]}, nil
 }
