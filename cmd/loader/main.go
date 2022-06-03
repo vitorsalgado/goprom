@@ -12,12 +12,13 @@ import (
 	"golang.org/x/sys/unix"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 )
 
 func main() {
-	f, _ := os.Create("l.lock")
+	f, _ := os.Create(path.Join(os.TempDir(), "promo.lock"))
 	if err := unix.Flock(int(f.Fd()), unix.LOCK_EX); err != nil {
 		log.Fatal().Err(err).Msgf("cannot acquire exclusive lock. maybe there is another job running")
 		return
