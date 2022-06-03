@@ -66,7 +66,12 @@ the process automatically.
 
 ## Development
 
-Check the [Makefile](Makefile) for more details.
+Check the [Makefile](Makefile) for more details.  
+Execute the following command to see Makefile help:
+
+```
+make
+```
 
 ### Tools
 

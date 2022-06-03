@@ -3,6 +3,7 @@ package loader
 import (
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/vitorsalgado/goprom/internal/domain"
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"io"
 	"os/exec"
@@ -37,7 +38,7 @@ func (p *RedisStreamer) Stream(w io.StringWriter, chunk []string) error {
 
 	_, err = w.WriteString(
 		fmt.Sprintf("HSET %s id %s price %s expiration_date \"%s\"\nEXPIRE %s 1800\n",
-			chunk[columnID], chunk[columnID], fmt.Sprintf("%.2f", price), dt.Format(time.RFC3339Nano), chunk[columnID]))
+			chunk[columnID], chunk[columnID], fmt.Sprintf("%.2f", price), dt.Format(domain.PromotionDatetimeFormat), chunk[columnID]))
 
 	return err
 }

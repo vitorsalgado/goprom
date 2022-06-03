@@ -39,15 +39,9 @@ func (h *PromotionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := json.Marshal(promo)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("content-type", "application/json")
 
-	_, err = w.Write(b)
+	err = json.NewEncoder(w).Encode(promo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
