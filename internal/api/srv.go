@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/go-redis/redis/v8"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vitorsalgado/goprom/internal/api/handlers"
 	"github.com/vitorsalgado/goprom/internal/domain"
 	"github.com/vitorsalgado/goprom/internal/std/middleware"
@@ -28,6 +29,7 @@ func (s *Srv) APIServer(addr string, client *redis.Client) *http.Server {
 	s.mux.Handle("/", Dispatcher(
 		handlers.NewPingHandler(),
 		handlers.NewPromotionHandler(domain.NewPromotionRepository(client))))
+	s.mux.Handle("/metrics", promhttp.Handler())
 
 	return &http.Server{
 		Addr:              addr,
