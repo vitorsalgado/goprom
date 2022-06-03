@@ -1,10 +1,10 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/vitorsalgado/goprom/internal/api/mocks"
+	"github.com/vitorsalgado/goprom/internal/api/handlers/mocks"
 	"github.com/vitorsalgado/goprom/internal/domain"
 	"golang.org/x/net/context"
 	"net/http"

@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/go-redis/redis/v8"
+	"github.com/vitorsalgado/goprom/internal/api/handlers"
 	"github.com/vitorsalgado/goprom/internal/domain"
 	"github.com/vitorsalgado/goprom/internal/std/middleware"
 	"net/http"
@@ -25,8 +26,8 @@ func (s *Srv) Configure(conf ...func(mux *http.ServeMux)) {
 // APIServer builds an HTTP server with default dependencies and routes
 func (s *Srv) APIServer(addr string, client *redis.Client) *http.Server {
 	s.mux.Handle("/", Dispatcher(
-		NewPingHandler(),
-		NewPromotionHandler(domain.NewPromotionRepository(client))))
+		handlers.NewPingHandler(),
+		handlers.NewPromotionHandler(domain.NewPromotionRepository(client))))
 
 	return &http.Server{
 		Addr:              addr,

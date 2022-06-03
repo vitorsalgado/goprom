@@ -1,13 +1,14 @@
 package api
 
 import (
+	"github.com/vitorsalgado/goprom/internal/api/handlers"
 	"net/http"
 	"strings"
 )
 
 func Dispatcher(
-	ping *PingHandler,
-	promotion *PromotionHandler,
+	ping *handlers.PingHandler,
+	promotion *handlers.PromotionHandler,
 ) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
