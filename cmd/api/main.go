@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/rs/zerolog/log"
 	"github.com/vitorsalgado/goprom/internal/api"
-	goprom "github.com/vitorsalgado/goprom/internal/std"
+	"github.com/vitorsalgado/goprom/internal/std"
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"github.com/vitorsalgado/goprom/internal/std/storage"
 	"net/http"
@@ -21,7 +21,7 @@ func main() {
 
 	conf := config.Load()
 
-	goprom.ConfigureEnv(conf)
+	std.ConfigureEnv(conf)
 
 	client := storage.NewRedisClient(conf)
 
