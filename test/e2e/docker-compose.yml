@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  redis:
+    extends:
+      file: ../../deployments/local/base.yml
+      service: redis
+    container_name: redis_test
+
+  api:
+    build:
+      context: ../..
+    container_name: api_test
+    environment:
+      DEBUG: true
+    ports:
+      - "8080:8080"
+    links:
+      - redis
+
+  loader:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.bulkloader
+    container_name: loader_test
+    environment:
+      DEBUG: true
+      PROMOTIONS: /data/promotions.csv
+      PROMOTIONS_CMDS: /data/promotions_commands_%d.txt
+    volumes:
+      - ./_testdata:/data
+    links:
+      - redis
