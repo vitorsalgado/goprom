@@ -7,10 +7,14 @@ type Source interface {
 	File(filename string) (*os.File, error)
 }
 
-// LocalFileSource reads promotions from local filesystem
-type LocalFileSource struct {
+// localFileSource reads promotions from local filesystem
+type localFileSource struct {
 }
 
-func (src *LocalFileSource) File(filename string) (*os.File, error) {
+func NewSource() Source {
+	return &localFileSource{}
+}
+
+func (src *localFileSource) File(filename string) (*os.File, error) {
 	return os.Open(filename)
 }

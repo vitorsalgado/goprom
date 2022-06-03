@@ -29,8 +29,8 @@ const (
 	columnExpirationDate = 2
 )
 
-// NewLoadPromotionsHandler initiates a new instance of Handler
-func NewLoadPromotionsHandler(
+// NewLoader initiates a new instance of Handler
+func NewLoader(
 	cfg *config.Config, ctx context.Context, s Streamer, src Source, lc Lifecycle,
 ) *Handler {
 	return &Handler{

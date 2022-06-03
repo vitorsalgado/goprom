@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	f, _ := os.Create("promo.lock")
+	f, _ := os.Create("l.lock")
 	if err := unix.Flock(int(f.Fd()), unix.LOCK_EX); err != nil {
 		log.Fatal().Err(err).Msgf("cannot acquire exclusive lock. maybe there is another job running")
 		return
@@ -64,10 +64,8 @@ func main() {
 		return
 	}
 
-	promo := loader.NewLoadPromotionsHandler(
-		cfg, ctx, loader.NewStreamer(cfg), &loader.LocalFileSource{}, &loader.DefaultLifecycle{})
-	n, err := promo.Load()
-
+	l := loader.NewLoader(cfg, ctx, loader.NewStreamer(cfg), loader.NewSource(), loader.NewLifecycle())
+	n, err := l.Load()
 	if err != nil {
 		log.Fatal().Err(err).
 			Msgf("an error occurred while feeding new promotions")

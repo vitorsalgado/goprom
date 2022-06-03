@@ -29,8 +29,8 @@ func TestFeedingPromotions(t *testing.T) {
 		fake := FakeStreamer{real: s, m: mock.Mock{}}
 		fake.m.On("Push", mock.Anything).Return(nil)
 
-		loader := NewLoadPromotionsHandler(
-			cfg, context.TODO(), &fake, &LocalFileSource{}, &l)
+		loader := NewLoader(
+			cfg, context.TODO(), &fake, NewSource(), &l)
 		i, err := loader.Load()
 
 		lines := make([]string, 0)

@@ -17,15 +17,15 @@ type Streamer interface {
 	Push(filename string) error
 }
 
-type RedisStreamer struct {
+type redisStreamer struct {
 	cfg *config.Config
 }
 
 func NewStreamer(cfg *config.Config) Streamer {
-	return &RedisStreamer{cfg: cfg}
+	return &redisStreamer{cfg: cfg}
 }
 
-func (p *RedisStreamer) Stream(w io.StringWriter, chunk []string) error {
+func (p *redisStreamer) Stream(w io.StringWriter, chunk []string) error {
 	dt, err := time.Parse("2006-01-02 15:04:05 -0700 MST", chunk[columnExpirationDate])
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (p *RedisStreamer) Stream(w io.StringWriter, chunk []string) error {
 	return err
 }
 
-func (p *RedisStreamer) Push(filename string) error {
+func (p *redisStreamer) Push(filename string) error {
 	log.Info().Msg("pushing changes to Redis")
 
 	out, err := exec.Command("bash", "-c",

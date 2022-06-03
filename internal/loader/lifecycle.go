@@ -12,10 +12,14 @@ type Lifecycle interface {
 	OnFinish(filename string) error
 }
 
-type DefaultLifecycle struct {
+type defaultLifecycle struct {
 }
 
-func (lc *DefaultLifecycle) OnFinish(filename string) error {
+func NewLifecycle() Lifecycle {
+	return &defaultLifecycle{}
+}
+
+func (lc *defaultLifecycle) OnFinish(filename string) error {
 	parts := strings.Split(filename, ".csv")
 	nm := parts[0]
 	now := time.Now().UTC().Format("20060102150405")
