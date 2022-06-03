@@ -1,0 +1,22 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o bin/api cmd/api/main.go"
+bin = "bin/api"
+include_ext = ["go", "yaml", "yml", "env"]
+exclude_dir = ["tmp", ".husky", ".logs", ".idea", ".vscode", "node_modules", "scripts", "test"]
+log = "air.log"
+delay = 1000
+
+[log]
+time = true
+
+[color]
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+clean_on_exit = true

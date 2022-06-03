@@ -4,9 +4,9 @@ import "time"
 
 type (
 	Promotion struct {
-		ID             string
-		Price          float64
-		ExpirationDate time.Time
+		ID             string     `redis:"id"`
+		Price          float64    `redis:"price"`
+		ExpirationDate *time.Time `redis:"expiration_date"`
 	}
 
 	PromotionRepository interface {

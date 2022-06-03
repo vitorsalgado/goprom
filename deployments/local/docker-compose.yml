@@ -6,16 +6,27 @@ services:
       file: base.yml
       service: redis
 
-  goprom:
+  api:
     build:
       context: ../..
-    container_name: goprom
+    container_name: api
+    environment:
+      DEBUG: true
     ports:
       - "8080:8080"
-    volumes:
-      - promotions
-    depends_on:
+    links:
       - redis
 
-volumes:
-  promotions:
+  loader:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.bulkloader
+    container_name: loader
+    environment:
+      DEBUG: true
+      PROMOTIONS: /data/promotions.csv
+      PROMOTIONS_CMDS: /data/promotions_commands.txt
+    volumes:
+      - ../../data:/data
+    links:
+      - redis

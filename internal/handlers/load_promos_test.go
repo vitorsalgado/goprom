@@ -23,8 +23,8 @@ func TestFeedingPromotions(t *testing.T) {
 		fake := FakeStreamer{real: s, m: mock.Mock{}}
 		fake.m.On("Push").Return(nil)
 
-		feeder := NewPromotionFeedHandler(promotionsFilename, promotionsCommandFilename, &fake)
-		i, err := feeder.Feed()
+		feeder := NewLoadPromotionsHandler(promotionsFilename, promotionsCommandFilename, &fake)
+		i, err := feeder.Load()
 
 		cmds, _ := ioutil.ReadFile(promotionsCommandFilename)
 		lines := strings.Split(strings.TrimSpace(string(cmds)), "\n")

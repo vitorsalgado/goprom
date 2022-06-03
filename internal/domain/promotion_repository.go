@@ -1,19 +1,32 @@
 package domain
 
 import (
-	"github.com/vitorsalgado/goprom/internal/utils/config"
+	"context"
+	"github.com/go-redis/redis/v8"
 )
 
 type (
 	PromotionRedisRepository struct {
-		cfg *config.Config
+		ctx context.Context
+		r   *redis.Client
 	}
 )
 
-func NewPromotionRepository() PromotionRepository {
-	return &PromotionRedisRepository{}
+func NewPromotionRepository(ctx context.Context, client *redis.Client) PromotionRepository {
+	return &PromotionRedisRepository{ctx: ctx, r: client}
 }
 
-func (r *PromotionRedisRepository) GetByID(id string) (*Promotion, error) {
-	return nil, nil
+func (repo *PromotionRedisRepository) GetByID(id string) (*Promotion, error) {
+	res := repo.r.HGetAll(repo.ctx, id)
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	promo := &Promotion{}
+	err := res.Scan(promo)
+	if err != nil {
+		return nil, err
+	}
+
+	return promo, nil
 }

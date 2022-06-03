@@ -1,17 +1,42 @@
 version: '3.9'
 
 services:
-  redis_dev:
+  redis:
+    container_name: redis_dev
     extends:
       file: base.yml
       service: redis
 
-  goprom_dev:
+  api_dev:
     build:
       context: ../..
-      dockerfile: ../../Dockerfile.dev
-    container_name: goprom_dev
+      dockerfile: Dockerfile.dev
+    working_dir: /project-package
+    container_name: api_dev
+    command: air -c .air.api.toml
+    restart: unless-stopped
+    volumes:
+      - ../../:/project-package
     ports:
       - "8080:8080"
     depends_on:
-      - redis_dev
+      - redis
+    links:
+      - redis
+
+
+  loader_dev:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.dev
+    working_dir: /project-package
+    container_name: loader_dev
+    command: air -c .air.loader.toml
+    restart: unless-stopped
+    volumes:
+      - ../../data:/data
+      - ../../:/project-package
+    links:
+      - redis
+    depends_on:
+      - redis

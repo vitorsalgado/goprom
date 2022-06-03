@@ -6,6 +6,8 @@ import (
 	"github.com/vitorsalgado/goprom/internal/utils/config"
 	"io"
 	"os/exec"
+	"strconv"
+	"time"
 )
 
 type RedisStreamer struct {
@@ -17,9 +19,19 @@ func NewStreamer(cfg *config.Config) Streamer {
 }
 
 func (p *RedisStreamer) Stream(w io.StringWriter, chunk []string) error {
-	_, err := w.WriteString(
+	dt, err := time.Parse("2006-01-02 15:04:05 -0700 MST", chunk[columnExpirationDate])
+	if err != nil {
+		return err
+	}
+
+	price, err := strconv.ParseFloat(chunk[columnPrice], 64)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.WriteString(
 		fmt.Sprintf("HSET %s id %s price %s expiration_date \"%s\"\nEXPIRE %s 1800\n",
-			chunk[columnID], chunk[columnID], chunk[columnPrice], chunk[columnExpirationDate], chunk[columnID]))
+			chunk[columnID], chunk[columnID], fmt.Sprintf("%.2f", price), dt.Format(time.RFC3339Nano), chunk[columnID]))
 
 	return err
 }
@@ -27,8 +39,8 @@ func (p *RedisStreamer) Stream(w io.StringWriter, chunk []string) error {
 func (p *RedisStreamer) Push() error {
 	log.Info().Msg("pushing changes")
 
-	out, err := exec.Command("bash", "-count",
-		fmt.Sprintf("cat %s | redis-cli --pipe -u %s", p.cfg.PromotionsCommands, p.cfg.RedisAddr)).
+	out, err := exec.Command("bash", "-c",
+		fmt.Sprintf("cat %s | redis-cli --pipe -u redis://%s", p.cfg.PromotionsBulkCmdFilename, p.cfg.RedisAddr)).
 		Output()
 	if err != nil {
 		log.Error().Err(err).

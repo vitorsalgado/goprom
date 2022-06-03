@@ -10,11 +10,3 @@ services:
       - "6379:6379"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-
-  redis_bulk_loader:
-    build:
-      context: ../..
-      dockerfile: Dockerfile.bulkloader
-    container_name: redis_bulk_loader
-    links:
-      - redis

@@ -8,14 +8,19 @@ import (
 	"strings"
 )
 
+// PromotionHandler handles specific promotions requests
 type PromotionHandler struct {
 	repo domain.PromotionRepository
 }
 
+// NewPromotionHandler returns a new PromotionHandler instance
 func NewPromotionHandler(repo domain.PromotionRepository) *PromotionHandler {
 	return &PromotionHandler{repo: repo}
 }
 
+// GetByID returns a promotion by its id
+// GET /promotions/:id
+// 200 (OK)
 func (h *PromotionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	id := parts[len(parts)-1]
@@ -39,6 +44,8 @@ func (h *PromotionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("content-type", "application/json")
 
 	_, err = w.Write(b)
 	if err != nil {

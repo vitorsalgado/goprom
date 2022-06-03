@@ -21,6 +21,9 @@
 .DS_Store
 .vscode/
 
+Makefile.overrides
+promo.lock
+
 bin/
 coverage/
 data/

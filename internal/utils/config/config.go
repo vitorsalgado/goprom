@@ -9,9 +9,13 @@ import (
 
 // Env holds environment variables used by the application
 type Env struct {
-	Promotions         string `env:"PROMOTIONS"`
-	PromotionsCommands string `env:"PROMOTIONS_CMDS"`
-	RedisAddr          string `env:"REDIS_ADDR,default=redis://localhost:6379"`
+	Debug                     bool   `env:"DEBUG,default=true"`
+	LogLevel                  int8   `env:"LOG_LEVEL,default=1"`
+	ServerAddr                string `env:"SERVER_ADDR,default=:8080"`
+	PromotionsCsv             string `env:"PROMOTIONS,default=/data/promotions.csv"`
+	PromotionsBulkCmdFilename string `env:"PROMOTIONS_CMDS,default=/data/promotions_commands.txt"`
+	PromotionsExpiration      int    `env:"PROMOTIONS_EXPIRATION,default=1800"`
+	RedisAddr                 string `env:"REDIS_ADDR,default=redis:6379"`
 }
 
 // Config represent application configurations

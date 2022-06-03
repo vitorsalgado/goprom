@@ -1,7 +1,4 @@
-FROM golang:1.18-alpine
-
-ARG REDIS_VERSION="stable"
-ARG REDIS_DOWNLOAD_URL="http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz"
+FROM golang:1.18-alpine as build
 
 RUN apk update && apk upgrade && \
     apk add --update --no-cache --virtual \
@@ -9,7 +6,26 @@ RUN apk update && apk upgrade && \
     make
 
 WORKDIR /app
+
 COPY go.mod go.sum Makefile ./
-RUN make deps
+RUN make download
 COPY . .
-RUN make build
+RUN make build-loader
+
+# ---
+
+FROM ubuntu
+
+COPY --from=build /app/bin /
+COPY cmd/loader/promotions_cron.sh /etc/cron.d/promotions_cron.sh
+
+RUN apt-get update && apt-get -y install \
+    cron \
+    redis
+
+RUN chmod 0644 /etc/cron.d/promotions_cron.sh && \
+    crontab /etc/cron.d/promotions_cron.sh && \
+    touch /var/log/cron.log && \
+    mkdir -p /data
+
+CMD cron && tail -f /var/log/cron.log
