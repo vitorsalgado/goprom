@@ -26,17 +26,17 @@
 
 GoProm periodically load promotions into Redis and expose the data via an HTTP API. It's composed by two applications
 that run separately: **api** and **loader**.  
-The `api` simple expose an endpoint to query promotions its identifier.  
+The `api` simple expose an endpoint to query promotions by id.  
 The `loader` reads a **csv** file in a specific path, by default **data**, and sends all data to Redis. It's triggered
 by a `cron`.
 The `loader`workflow is the following:
 
 - a `crontab` executes the `loader` every 1 minute.
-- the `loader` checks if there's any new promotions.csv file in a specified directory.
+- the `loader` checks if there's any new promotions.csv file in the specified directory.
 - no promotions file, it will exit.
 - found a promotions file, now it'll read the promotions and generate a file with Redis commands for every entry.
 - after generating the commands file with every promotion and their respective expiration, it will send the commands to
-  Redis CLI and the CLI will finally send all data to the server.
+  Redis via **redis-cli --pipe**.
 
 ## Getting Started
 
@@ -52,7 +52,7 @@ This project uses environment variables for configuration. See [.env.sample](.en
 
 ### Running
 
-To execute a local environment with both the `loader`, the `api` and `Redis`, execute:
+To execute a local environment with both the `loader`, the `api` and `Redis`, run:
 
 ```
 make up
@@ -63,7 +63,7 @@ make up
 With the application running, in order to process new promotions, add the **promotions.csv** file to the directory
 **data** at the project root dir. After some time, the **loader** application will identify this file and start
 the process automatically.  
-Query one promotion with the following command:
+To query one promotion, use the following command:
 
 ```
 curl http://localhost:8080/promotions/d018ef0b-dbd9-48f1-ac1a-eb4d90e57118
@@ -72,7 +72,7 @@ curl http://localhost:8080/promotions/d018ef0b-dbd9-48f1-ac1a-eb4d90e57118
 ## Development
 
 Check the [Makefile](Makefile) for more details.  
-Execute the following command to see Makefile help:
+Execute the following command to see the Makefile help:
 
 ```
 make
@@ -117,7 +117,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 - To improve the CSV processing performance, a group of goroutines are used, instead of just one in the previous
   implementation. Each goroutine writes in its own bulk load commands file and several loads are being done in parallel
-  now. The performance improvement wasn't so big in the end. Need more thoughts on this.
+  now. The performance improvement wasn't so big in the end. Need more thoughts on this. Maybe splitting the file and assigning a loader to each chunk may improve the performance.
 - Promotions will be removed by Redis using the Expiration feature. For every promotion imported, a configurable
   expiration time is set as well.
 - For an ideal solution, the application should have:
