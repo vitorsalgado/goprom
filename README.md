@@ -58,6 +58,13 @@ To execute a local environment with both the `loader`, the `api` and `Redis`, ex
 make up
 ```
 
+### Processing Promotions
+
+With the application running, in order to process new promotions, add the **promotions.csv** file to the directory **
+data**
+at the project root dir. After some time, the **loader** application will identify this file and start the process
+automatically.
+
 ## Development
 
 Check the [Makefile](Makefile) for more details.
@@ -102,5 +109,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 - To improve the CSV processing performance, a group of goroutines are used, instead of just one in the previous
   implementation. Each goroutine writes in its own bulk load commands file and several loads are being done in parallel
   now. The performance improvement wasn't so big in the end. Need more thoughts on this.
+- Promotions will be removed by Redis using the Expiration feature. For every promotion imported, a configurable
+  expiration time is set as well.
+- For an ideal solution, the application should have:
+    - centralized log solution
+    - monitoring solution
+    - metrics
+    - deployment should be made using solutions like Kubernetes, which facilitates configuration and scaling when needed
+    - ideally, the Redis should be operated as a cluster to horizontally scale it and increase availability
 
 <p align="center"><a href="#goprom-top">back to top</a></p>
