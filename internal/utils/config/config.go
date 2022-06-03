@@ -11,7 +11,7 @@ type environ struct {
 	Debug                     bool   `env:"DEBUG,default=true"`
 	LogLevel                  int8   `env:"LOG_LEVEL,default=1"`
 	ServerAddr                string `env:"SERVER_ADDR,default=:8080"`
-	PromotionsBulkLoadWorkers int    `env:"PROMOTIONS_BULK_LOAD_WORKERS,default=10"`
+	PromotionsBulkLoadWorkers int    `env:"PROMOTIONS_BULK_LOAD_WORKERS,default=5"`
 	PromotionsCsv             string `env:"PROMOTIONS,default=/data/promotions.csv"`
 	PromotionsBulkCmdFilename string `env:"PROMOTIONS_CMDS,default=/data/promotions_commands_%d.txt"`
 	PromotionsExpiration      int    `env:"PROMOTIONS_EXPIRATION,default=1800"`
@@ -26,11 +26,8 @@ type Config struct {
 
 // Load loads configuration using environment variables
 func Load() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		// ignoring dotenv error for missing .env file. the .env file is for local environment only.
-		log.Trace().Err(err).Msg("no .env file. moving forward")
-	}
+	// ignoring dotenv error for missing .env file. the .env file is for local environment only.
+	_ = godotenv.Load()
 
 	wd, err := os.Getwd()
 	if err != nil {

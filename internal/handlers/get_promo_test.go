@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vitorsalgado/goprom/internal/domain"
 	"github.com/vitorsalgado/goprom/internal/handlers/mocks"
+	"golang.org/x/net/context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,11 +15,12 @@ import (
 func TestGetPromotionHandler(t *testing.T) {
 	t.Run("should return the promotion with provided when it exists in the database", func(t *testing.T) {
 		id := "test"
+		ctx := context.TODO()
 		expected := &domain.Promotion{}
 		req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/promotions/%s", id), nil)
 		rr := httptest.NewRecorder()
 		repo := mocks.FakePromotionRepository{}
-		repo.On("GetByID", id).Return(expected, nil)
+		repo.On("GetByID", ctx, id).Return(expected, nil)
 
 		h := http.HandlerFunc(NewPromotionHandler(&repo).GetByID)
 		h.ServeHTTP(rr, req)

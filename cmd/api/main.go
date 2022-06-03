@@ -5,10 +5,7 @@ import (
 	"errors"
 	"github.com/rs/zerolog/log"
 	goprom "github.com/vitorsalgado/goprom/internal"
-	"github.com/vitorsalgado/goprom/internal/domain"
-	"github.com/vitorsalgado/goprom/internal/handlers"
 	"github.com/vitorsalgado/goprom/internal/utils/config"
-	"github.com/vitorsalgado/goprom/internal/utils/middleware"
 	"github.com/vitorsalgado/goprom/internal/utils/storage"
 	"net/http"
 	"os"
@@ -19,22 +16,16 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	conf := config.Load()
 
-	client := storage.NewRedisClient(conf)
-	srv := goprom.NewSrv(ctx, func(mux *http.ServeMux) {
-		mux.Handle("/", goprom.Dispatcher(
-			handlers.NewPingHandler(), handlers.NewPromotionHandler(domain.NewPromotionRepository(ctx, client))))
-	})
+	goprom.ConfigureEnv(conf)
 
-	server := &http.Server{
-		Addr:              conf.ServerAddr,
-		Handler:           middleware.Recovery(srv.Mux),
-		IdleTimeout:       30 * time.Second,
-		WriteTimeout:      2 * time.Second,
-		ReadTimeout:       2 * time.Second,
-		ReadHeaderTimeout: 3 * time.Second,
-	}
+	client := storage.NewRedisClient(conf)
+
+	srv := goprom.NewSrv()
+	server := srv.APIServer(conf.ServerAddr, client)
 
 	ext := make(chan os.Signal, 1)
 	signal.Notify(ext, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -54,13 +45,11 @@ func main() {
 		cancel()
 	}()
 
-	log.Info().Msg("starting http server")
-	log.Info().Msgf("debug is %s", os.Getenv("DEBUG"))
-	log.Info().Msgf("debug (cfg) is %t", conf.Debug)
+	log.Info().Msgf("starting http server on address %s", conf.ServerAddr)
+	log.Info().Msgf("debug: %t", conf.Debug)
+	log.Info().Msgf("redis: %s", conf.RedisAddr)
 
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal().Err(err).Msgf("server shutdown failed")
+		log.Fatal().Err(err).Msg("server shutdown failed")
 	}
-
-	<-ctx.Done()
 }

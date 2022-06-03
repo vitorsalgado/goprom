@@ -3,21 +3,24 @@ package domain
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	"time"
 )
 
 type (
 	PromotionRedisRepository struct {
-		ctx context.Context
-		r   *redis.Client
+		r *redis.Client
 	}
 )
 
-func NewPromotionRepository(ctx context.Context, client *redis.Client) PromotionRepository {
-	return &PromotionRedisRepository{ctx: ctx, r: client}
+func NewPromotionRepository(client *redis.Client) PromotionRepository {
+	return &PromotionRedisRepository{r: client}
 }
 
-func (repo *PromotionRedisRepository) GetByID(id string) (*Promotion, error) {
-	res := repo.r.HGetAll(repo.ctx, id)
+func (repo *PromotionRedisRepository) GetByID(ctx context.Context, id string) (*Promotion, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	res := repo.r.HGetAll(ctx, id)
 	if res.Err() != nil {
 		return nil, res.Err()
 	}

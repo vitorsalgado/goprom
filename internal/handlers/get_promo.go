@@ -22,12 +22,12 @@ func NewPromotionHandler(repo domain.PromotionRepository) *PromotionHandler {
 // GET /promotions/:id
 // 200 (OK)
 func (h *PromotionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	log.Debug().Msgf("GET %s", r.RequestURI)
+
 	parts := strings.Split(r.URL.Path, "/")
 	id := parts[len(parts)-1]
 
-	log.Debug().Msgf("getting promotion %s", id)
-
-	promo, err := h.repo.GetByID(id)
+	promo, err := h.repo.GetByID(r.Context(), id)
 	if err != nil {
 		log.Error().Err(err).Msgf("error getting promotion with id %s", id)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

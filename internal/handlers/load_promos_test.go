@@ -8,16 +8,19 @@ import (
 	"github.com/vitorsalgado/goprom/internal/utils/config"
 	"io"
 	"io/ioutil"
+	"os"
+	"path"
 	"strings"
 	"testing"
 )
 
 func TestFeedingPromotions(t *testing.T) {
 	t.Run("should read all promotions from source file and feed then to the provided destination", func(t *testing.T) {
+		wd, _ := os.Getwd()
 		cfg := config.Load()
 		cfg.PromotionsBulkLoadWorkers = 2
-		cfg.PromotionsCsv = "./_testdata/promos.csv"
-		cfg.PromotionsBulkCmdFilename = "./_testdata/promos_commands-%d.tmp"
+		cfg.PromotionsCsv = path.Join(wd, "_testdata", "promos.csv")
+		cfg.PromotionsBulkCmdFilename = path.Join(wd, "_testdata", "promos_commands-%d.tmp")
 
 		l := FakeLifecycle{}
 		l.On("OnFinish", cfg.PromotionsCsv).Return(nil)

@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type (
 	Promotion struct {
@@ -10,6 +13,6 @@ type (
 	}
 
 	PromotionRepository interface {
-		GetByID(id string) (*Promotion, error)
+		GetByID(ctx context.Context, id string) (*Promotion, error)
 	}
 )
