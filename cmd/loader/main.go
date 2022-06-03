@@ -6,7 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 	"github.com/vitorsalgado/goprom/internal/loader"
-	goprom "github.com/vitorsalgado/goprom/internal/std"
+	"github.com/vitorsalgado/goprom/internal/std"
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"github.com/vitorsalgado/goprom/internal/std/storage"
 	"golang.org/x/sys/unix"
@@ -45,7 +45,7 @@ func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
 
-	goprom.ConfigureEnv(cfg)
+	std.ConfigureEnv(cfg)
 
 	// testing if redis is reachable
 	redisCtx, redisCancelFn := context.WithTimeout(ctx, 10*time.Second)
