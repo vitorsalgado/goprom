@@ -71,7 +71,7 @@ func TestCsvImportAndPromotionsRetrieval(t *testing.T) {
 
 	c := <-ch
 	if !c {
-		log.Fatal("could ensure that the promotions were imported")
+		log.Fatal("couldn't ensure that the promotions were imported. exiting ...")
 	}
 
 	log.Println("promotions were imported. continuing with tests")
