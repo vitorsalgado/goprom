@@ -2,7 +2,7 @@
   "name": "goproms",
   "author": "Vitor Hugo Salgado <vsalgadopb@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/vitorsalgado/gopromos#readme",
+  "homepage": "https://github.com/vitorsalgado/goprom#readme",
   "scripts": {
     "prepare": "husky install"
   },
