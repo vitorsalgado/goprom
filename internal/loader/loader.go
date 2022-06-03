@@ -7,18 +7,12 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"golang.org/x/sync/errgroup"
-	"io"
 	"os"
 	"strings"
+	"sync/atomic"
 )
 
 type (
-	// Streamer handles promotions file data chunks
-	Streamer interface {
-		Stream(w io.StringWriter, chunk []string) error
-		Push(filename string) error
-	}
-
 	// Handler loads promotions from a source file into a data storage
 	Handler struct {
 		s   Streamer
@@ -59,6 +53,16 @@ func (p *Handler) Load() (int64, error) {
 	ch := make(chan string)
 
 	group, ctx := errgroup.WithContext(p.ctx)
+	var c int64
+
+	go func() {
+		for scanner.Scan() {
+			ch <- scanner.Text()
+			atomic.AddInt64(&c, 1)
+		}
+
+		close(ch)
+	}()
 
 	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
 		d := i
@@ -70,13 +74,14 @@ func (p *Handler) Load() (int64, error) {
 			}
 
 			cmds := bufio.NewWriter(df)
+			defer cmds.Flush()
+			defer df.Close()
 
 			for {
 				select {
 				case chunk, ok := <-ch:
 					if !ok {
 						_ = cmds.Flush()
-						_ = df.Close()
 						return nil
 					}
 
@@ -84,21 +89,11 @@ func (p *Handler) Load() (int64, error) {
 
 				case <-ctx.Done():
 					_ = cmds.Flush()
-					_ = df.Close()
 					return nil
 				}
 			}
 		})
 	}
-
-	var c int64
-
-	for scanner.Scan() {
-		ch <- scanner.Text()
-		c++
-	}
-
-	close(ch)
 
 	if err = group.Wait(); err != nil {
 		log.Error().Stack().Err(err).Msgf("error processing promotions")
@@ -116,12 +111,7 @@ func (p *Handler) Load() (int64, error) {
 	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
 		d := i
 		group.Go(func() error {
-			err = p.s.Push(fmt.Sprintf(p.cfg.PromotionsBulkCmdFilename, d))
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return p.s.Push(fmt.Sprintf(p.cfg.PromotionsBulkCmdFilename, d))
 		})
 	}
 

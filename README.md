@@ -60,10 +60,9 @@ make up
 
 ### Processing Promotions
 
-With the application running, in order to process new promotions, add the **promotions.csv** file to the directory **
-data**
-at the project root dir. After some time, the **loader** application will identify this file and start the process
-automatically.
+With the application running, in order to process new promotions, add the **promotions.csv** file to the directory
+**data** at the project root dir. After some time, the **loader** application will identify this file and start
+the process automatically.
 
 ## Development
 

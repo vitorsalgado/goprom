@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+// Streamer handles promotions file data chunks
+type Streamer interface {
+	Stream(w io.StringWriter, chunk []string) error
+	Push(filename string) error
+}
+
 type RedisStreamer struct {
 	cfg *config.Config
 }

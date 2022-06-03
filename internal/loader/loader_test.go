@@ -18,7 +18,7 @@ func TestFeedingPromotions(t *testing.T) {
 	t.Run("should read all promotions from source file and feed then to the provided destination", func(t *testing.T) {
 		wd, _ := os.Getwd()
 		cfg := config.Load()
-		cfg.PromotionsBulkLoadWorkers = 2
+		cfg.PromotionsBulkLoadWorkers = 5
 		cfg.PromotionsCsv = path.Join(wd, "_testdata", "promos.csv")
 		cfg.PromotionsBulkCmdFilename = path.Join(wd, "_testdata", "promos_commands-%d.tmp")
 
@@ -33,16 +33,29 @@ func TestFeedingPromotions(t *testing.T) {
 			cfg, context.TODO(), &fake, &LocalFileSource{}, &l)
 		i, err := loader.Load()
 
-		cmds0, _ := ioutil.ReadFile(fmt.Sprintf(cfg.PromotionsBulkCmdFilename, 0))
-		cmds1, _ := ioutil.ReadFile(fmt.Sprintf(cfg.PromotionsBulkCmdFilename, 1))
-		lines0 := strings.Split(strings.TrimSpace(string(cmds0)), "\n")
-		lines1 := strings.Split(strings.TrimSpace(string(cmds1)), "\n")
+		lines := make([]string, 0)
+		count := 0
+
+		for i := 0; i < cfg.PromotionsBulkLoadWorkers; i++ {
+			cmds, _ := ioutil.ReadFile(fmt.Sprintf(cfg.PromotionsBulkCmdFilename, i))
+			lines = append(lines, strings.Split(string(cmds), "\n")...)
+		}
+
+		for _, line := range lines {
+			if strings.TrimSpace(line) != "" {
+				count++
+			}
+		}
 
 		assert.Nil(t, err)
 		assert.Equal(t, int64(5), i)
-		assert.Equal(t, i*2, int64(len(lines0)+len(lines1)))
-		assert.True(t, fake.m.AssertNumberOfCalls(t, "Push", 2))
+		assert.Equal(t, 10, count) // 10 because there are 5 promotions and for each, we add a EXPIRE command
+		assert.True(t, fake.m.AssertNumberOfCalls(t, "Push", cfg.PromotionsBulkLoadWorkers))
 		assert.True(t, l.AssertNumberOfCalls(t, "OnFinish", 1))
+
+		for i := 0; i < cfg.PromotionsBulkLoadWorkers; i++ {
+			_ = os.Remove(fmt.Sprintf(cfg.PromotionsBulkCmdFilename, i))
+		}
 	})
 }
 
