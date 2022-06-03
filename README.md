@@ -89,10 +89,21 @@ make
 
 ## Tests
 
+### Unit Tests
+
 To execute all unit tests, run:
 
 ```
 make test
+```
+
+### End-to-End Tests
+
+The end-to-end test available runs a docker-compose environment first, and then the tests scripts.  
+Run:
+
+```
+make test-e2e
 ```
 
 ## Built With
@@ -117,7 +128,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 - To improve the CSV processing performance, a group of goroutines are used, instead of just one in the previous
   implementation. Each goroutine writes in its own bulk load commands file and several loads are being done in parallel
-  now. The performance improvement wasn't so big in the end. Need more thoughts on this. Maybe splitting the file and assigning a loader to each chunk may improve the performance.
+  now. The performance improvement wasn't so big in the end. Need more thoughts on this. Maybe splitting the file and
+  assigning a loader to each chunk may improve the performance.
 - Promotions will be removed by Redis using the Expiration feature. For every promotion imported, a configurable
   expiration time is set as well.
 - For an ideal solution, the application should have:

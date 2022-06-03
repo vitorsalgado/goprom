@@ -16,7 +16,10 @@ import (
 	"time"
 )
 
-func TestFlow(t *testing.T) {
+// TestCsvImportAndPromotionsRetrieval tests the main workflow
+// NOTE: this test will not work if run without the whole environment running.
+// Run using the command "make test-e2e".
+func TestCsvImportAndPromotionsRetrieval(t *testing.T) {
 	wd, _ := os.Getwd()
 	td := path.Join(wd, "_testdata")
 	promotions := path.Join(wd, "_testdata", "promotions.csv")
