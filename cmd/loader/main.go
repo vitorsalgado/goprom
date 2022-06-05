@@ -65,7 +65,7 @@ func main() {
 		return
 	}
 
-	l := loader.NewLoader(cfg, ctx, loader.NewStreamer(cfg), loader.NewSource(), loader.NewLifecycle())
+	l := loader.NewLoader(cfg, ctx, loader.RedisWriterFn(cfg), loader.NewSource(), loader.NewLifecycle())
 	n, err := l.Load()
 	if err != nil {
 		log.Fatal().Err(err).

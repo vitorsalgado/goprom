@@ -3,12 +3,9 @@ package loader
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"golang.org/x/sync/errgroup"
-	"os"
-	"os/exec"
 	"strings"
 	"sync/atomic"
 )
@@ -16,7 +13,7 @@ import (
 type (
 	// Handler loads promotions from a source file into a data storage
 	Handler struct {
-		s   Streamer
+		swp WriterProvider
 		lc  Lifecycle
 		src Source
 		cfg *config.Config
@@ -32,10 +29,10 @@ const (
 
 // NewLoader initiates a new instance of Handler
 func NewLoader(
-	cfg *config.Config, ctx context.Context, s Streamer, src Source, lc Lifecycle,
+	cfg *config.Config, ctx context.Context, swp WriterProvider, src Source, lc Lifecycle,
 ) *Handler {
 	return &Handler{
-		cfg: cfg, ctx: ctx, s: s, src: src, lc: lc}
+		cfg: cfg, ctx: ctx, swp: swp, src: src, lc: lc}
 }
 
 // Load loads promotions from a source into a data storage
@@ -66,37 +63,28 @@ func (p *Handler) Load() (int64, error) {
 	}()
 
 	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
+		d := i
 		group.Go(func() error {
-			cmd := exec.Command("bash", "-c", fmt.Sprintf("redis-cli --pipe -u redis://%s", p.cfg.RedisAddr))
-			in, e := cmd.StdinPipe()
+			log.Info().Msgf("starting promotions job %d", d)
+
+			w, e := p.swp()
 			if e != nil {
-				return e
+				return err
 			}
 
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-
-			e = cmd.Start()
-			if e != nil {
-				log.Error().Err(e).Msg("error creating command")
-				return e
-			}
-
-			defer in.Close()
+			streamer := NewStreamer()
 
 			for {
 				select {
 				case chunk, ok := <-ch:
 					if !ok {
-						_ = in.Close()
-						return nil
+						return w.Close()
 					}
 
-					_ = p.s.Stream(in, strings.Split(chunk, ","))
+					_ = streamer.Stream(w, strings.Split(chunk, ","))
 
 				case <-ctx.Done():
-					_ = in.Close()
-					return nil
+					return w.Close()
 				}
 			}
 		})

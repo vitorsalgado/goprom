@@ -21,18 +21,36 @@ func TestFeedingPromotions(t *testing.T) {
 		l := FakeLifecycle{}
 		l.On("OnFinish", cfg.PromotionsCsv).Return(nil)
 
-		s := NewStreamer(cfg)
+		s := NewStreamer()
+
 		fake := FakeStreamer{real: s, m: mock.Mock{}}
 		fake.m.On("Push", mock.Anything).Return(nil)
+		writer := &FakeWriter{}
+		writer.On("Write", mock.Anything).Return(0, nil)
+		writer.On("Close").Return(nil)
 
 		loader := NewLoader(
-			cfg, context.TODO(), &fake, NewSource(), &l)
+			cfg, context.TODO(), func() (io.WriteCloser, error) { return writer, nil }, NewSource(), &l)
 		i, err := loader.Load()
 
 		assert.Nil(t, err)
 		assert.Equal(t, int64(5), i)
+		assert.True(t, writer.AssertNumberOfCalls(t, "Write", 5))
 		assert.True(t, l.AssertNumberOfCalls(t, "OnFinish", 1))
 	})
+}
+
+type FakeWriter struct {
+	mock.Mock
+}
+
+func (fk *FakeWriter) Write(p []byte) (n int, err error) {
+	args := fk.Called(p)
+	return args.Get(0).(int), args.Error(1)
+}
+
+func (fk *FakeWriter) Close() error {
+	return fk.Called().Error(0)
 }
 
 type FakeStreamer struct {
@@ -40,7 +58,7 @@ type FakeStreamer struct {
 	m    mock.Mock
 }
 
-func (s *FakeStreamer) Stream(w io.WriteCloser, chunk []string) error {
+func (s *FakeStreamer) Stream(w io.Writer, chunk []string) error {
 	return s.real.Stream(w, chunk)
 }
 
