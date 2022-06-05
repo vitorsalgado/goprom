@@ -60,9 +60,16 @@ make up
 
 ### Processing Promotions
 
-With the application running, in order to process new promotions, add the **promotions.csv** file to the directory
+With the full docker compose environment up, in order to process new promotions, add the **promotions.csv** file to the
+directory
 **data** at the project root dir. After some time, the **loader** application will identify this file and start
 the process automatically.  
+If you just want to see the loader working, you can do:
+
+- make sure a Redis instance is running. Use the command: `make requirements`.
+- make sure to have a promotions file `promotions.csv` inside the folder `data` on the project root dir.
+- run `make loader` to run the loader one time.
+
 To query one promotion, use the following command:
 
 ```
