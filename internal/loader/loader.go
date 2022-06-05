@@ -8,6 +8,7 @@ import (
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"golang.org/x/sync/errgroup"
 	"os"
+	"os/exec"
 	"strings"
 	"sync/atomic"
 )
@@ -65,30 +66,36 @@ func (p *Handler) Load() (int64, error) {
 	}()
 
 	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
-		d := i
 		group.Go(func() error {
-			df, e := os.Create(fmt.Sprintf(p.cfg.PromotionsBulkCmdFilename, d))
+			cmd := exec.Command("bash", "-c", fmt.Sprintf("redis-cli --pipe -u redis://%s", p.cfg.RedisAddr))
+			in, e := cmd.StdinPipe()
 			if e != nil {
-				log.Error().Err(e).Msg("error creating redis commands file")
 				return e
 			}
 
-			cmds := bufio.NewWriter(df)
-			defer cmds.Flush()
-			defer df.Close()
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+
+			e = cmd.Start()
+			if e != nil {
+				log.Error().Err(e).Msg("error creating command")
+				return e
+			}
+
+			defer in.Close()
 
 			for {
 				select {
 				case chunk, ok := <-ch:
 					if !ok {
-						_ = cmds.Flush()
+						_ = in.Close()
 						return nil
 					}
 
-					_ = p.s.Stream(cmds, strings.Split(chunk, ","))
+					_ = p.s.Stream(in, strings.Split(chunk, ","))
 
 				case <-ctx.Done():
-					_ = cmds.Flush()
+					_ = in.Close()
 					return nil
 				}
 			}
@@ -103,19 +110,6 @@ func (p *Handler) Load() (int64, error) {
 	err = scanner.Err()
 	if err != nil {
 		log.Error().Err(err).Msg("error with promotions file scanner")
-		return -1, err
-	}
-
-	group, ctx = errgroup.WithContext(ctx)
-
-	for i := 0; i < p.cfg.PromotionsBulkLoadWorkers; i++ {
-		d := i
-		group.Go(func() error {
-			return p.s.Push(fmt.Sprintf(p.cfg.PromotionsBulkCmdFilename, d))
-		})
-	}
-
-	if err = group.Wait(); err != nil {
 		return -1, err
 	}
 

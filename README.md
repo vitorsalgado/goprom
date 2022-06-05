@@ -34,9 +34,9 @@ The `loader`workflow is the following:
 - a `crontab` executes the `loader` every 1 minute.
 - the `loader` checks if there's any new promotions.csv file in the specified directory.
 - no promotions file, it will exit.
-- found a promotions file, now it'll read the promotions and generate a file with Redis commands for every entry.
-- after generating the commands file with every promotion and their respective expiration, it will send the commands to
-  Redis via **redis-cli --pipe**.
+- found a promotions file, now it'll read the promotions and stream each entry to Redis, including a configurable
+  expiration time.
+- the `promotions.csv` file will be renamed, including a suffix `DATETIME--imported.csv`.
 
 ## Getting Started
 
@@ -128,8 +128,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 - To improve the CSV processing performance, a group of goroutines are used, instead of just one in the previous
   implementation. Each goroutine writes in its own bulk load commands file and several loads are being done in parallel
-  now. The performance improvement wasn't so big in the end. Need more thoughts on this. Maybe splitting the file and
-  assigning a loader to each chunk may improve the performance.
+  now.
 - Promotions will be removed by Redis using the Expiration feature. For every promotion imported, a configurable
   expiration time is set as well.
 - For an ideal solution, the application should have:

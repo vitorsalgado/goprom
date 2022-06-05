@@ -2,19 +2,16 @@ package loader
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"github.com/vitorsalgado/goprom/internal/domain"
 	"github.com/vitorsalgado/goprom/internal/std/config"
 	"io"
-	"os/exec"
 	"strconv"
 	"time"
 )
 
 // Streamer handles promotions file data chunks
 type Streamer interface {
-	Stream(w io.StringWriter, chunk []string) error
-	Push(filename string) error
+	Stream(w io.WriteCloser, chunk []string) error
 }
 
 type redisStreamer struct {
@@ -25,7 +22,7 @@ func NewStreamer(cfg *config.Config) Streamer {
 	return &redisStreamer{cfg: cfg}
 }
 
-func (p *redisStreamer) Stream(w io.StringWriter, chunk []string) error {
+func (p *redisStreamer) Stream(w io.WriteCloser, chunk []string) error {
 	dt, err := time.Parse("2006-01-02 15:04:05 -0700 MST", chunk[columnExpirationDate])
 	if err != nil {
 		return err
@@ -36,26 +33,9 @@ func (p *redisStreamer) Stream(w io.StringWriter, chunk []string) error {
 		return err
 	}
 
-	_, err = w.WriteString(
-		fmt.Sprintf("HSET %s id %s price %s expiration_date \"%s\"\nEXPIRE %s 1800\n",
-			chunk[columnID], chunk[columnID], fmt.Sprintf("%.2f", price), dt.Format(domain.PromotionDatetimeFormat), chunk[columnID]))
+	_, err = w.Write(
+		[]byte(fmt.Sprintf("HSET %s id %s price %s expiration_date \"%s\"\nEXPIRE %s 1800\n",
+			chunk[columnID], chunk[columnID], fmt.Sprintf("%.2f", price), dt.Format(domain.PromotionDatetimeFormat), chunk[columnID])))
 
 	return err
-}
-
-func (p *redisStreamer) Push(filename string) error {
-	log.Info().Msg("pushing changes to Redis")
-
-	out, err := exec.Command("bash", "-c",
-		fmt.Sprintf("cat %s | redis-cli --pipe -u redis://%s", filename, p.cfg.RedisAddr)).
-		Output()
-	if err != nil {
-		log.Error().Err(err).
-			Str("output", string(out)).
-			Msg("error piping promotion commands to redis-cli")
-
-		return err
-	}
-
-	return nil
 }

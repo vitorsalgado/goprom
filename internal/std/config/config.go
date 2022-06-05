@@ -13,7 +13,6 @@ type environ struct {
 	ServerAddr                string `env:"SERVER_ADDR,default=:8080"`
 	PromotionsBulkLoadWorkers int    `env:"PROMOTIONS_BULK_LOAD_WORKERS,default=5"`
 	PromotionsCsv             string `env:"PROMOTIONS,default=/data/promotions.csv"`
-	PromotionsBulkCmdFilename string `env:"PROMOTIONS_CMDS,default=/data/promotions_commands_%d.txt"`
 	PromotionsExpiration      int    `env:"PROMOTIONS_EXPIRATION,default=1800"`
 	RedisAddr                 string `env:"REDIS_ADDR,default=redis:6379"`
 }
