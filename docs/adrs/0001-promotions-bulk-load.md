@@ -8,13 +8,14 @@ How to load millions or even more entries into Redis in an efficient way?
 
 ### Redis pipeline using Go Redis client
 
-Using a regular Redis client for Go, like `go-redis` resulted in too much round trips for each operation with Redis,
+Using a regular Redis client for Go, like `go-redis`, resulted in too much round trips for each operation with Redis,
 which degraded the performance.
 
-### In Memory Solution
+### In memory solution
 
-An in memory solution would require an in house solution, prone to errors. Given the fact that there well established,
-lightweight solutions, such as Redis, the in memory solution was discarded.
+An in memory solution would require an in house implementation, requiring time and prone to errors.
+Given the fact that there are well established, lightweight solutions, such as Redis, the in memory solution was
+discarded.
 
 ### Other database
 
