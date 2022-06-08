@@ -139,9 +139,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 ## Considerations and Thoughts
 
 - To improve the CSV processing performance, a group of goroutines are used, instead of just one in the previous
-  implementation. Each goroutine writes in its own bulk load commands file and several loads are being done in parallel
-  now.
-- Promotions will be removed by Redis using the Expiration feature. For every promotion imported, a configurable
+  implementation. Each goroutine streams Redis commands to __redis-cli__ in parallel now.
+- Promotions will be removed by __Redis__ using the Expiration feature. For every promotion imported, a configurable
   expiration time is set as well.
 - For an ideal solution, the application should have:
     - centralized log solution
