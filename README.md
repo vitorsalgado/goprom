@@ -87,12 +87,17 @@ make
 
 ### Tools
 
-- Node.js
-- Air
-- Adr Tools
-- Staticcheck
-- Husky
-- Commit Lint
+Several tools, not only from the Go "world", are used to create a __local development environment__ were we can easily
+keep the source code within the project/company standards, avoiding committing bad code.  
+These tools are not required to be installed in order to contribute to this project.  
+Check the list below with a brief explanation for each.
+
+- [Node.js](https://nodejs.org/en/) - Husky and Commit Lint requires Node.js in order to run
+- [Air](https://github.com/cosmtrek/air) - Live reloads for Go apps
+- [Staticcheck](https://staticcheck.io/) - Additional linter for Go
+- [Husky](https://github.com/typicode/husky) - Git hooks management
+- [Commit Lint](https://github.com/conventional-changelog/commitlint) - Lint commit messages.
+  Currently, using __conventional commits__.
 
 ## Tests
 
