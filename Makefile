@@ -89,3 +89,6 @@ prep: ## prepare local development  environment
 	@echo "local tools"
 	@go install honnef.co/go/tools/cmd/staticcheck@latest
 	@npm i
+
+move-promotions: ## move test promotions to local data folder
+	@tar -xvf ./data/d/promotions.tar.gz --strip-components 2 -C ./data/
