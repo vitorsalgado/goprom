@@ -8,7 +8,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/prometheus/client_golang v1.12.2
 	github.com/rs/zerolog v1.27.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
@@ -30,5 +30,5 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/stretchr/objx v0.1.1 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
